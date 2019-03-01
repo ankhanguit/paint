@@ -4,6 +4,7 @@ import { Camera, Permissions} from "expo";
 import OpenCV from '@libraries/OpenCV';
 import TakePhotoButton from '@assets/svg/TakePhotoButton';
 import styles from "./styles";
+const DESIRED_RATIO = "16:9";
 
 class HomeScreen extends Component {
   constructor(props) {
@@ -53,6 +54,7 @@ class HomeScreen extends Component {
       <View style={styles.container}>
         <Camera
           ref={cam => (this.camera = cam)}
+          ratio={this.state.ratio}
           style={styles.preview}
         >
           <View style={styles.takePictureContainer}>
@@ -65,6 +67,18 @@ class HomeScreen extends Component {
         </Camera>
       </View>
     );
+  }
+
+  prepareRatio = async () => {
+    if (Platform.OS === 'android' && this.camera) {
+         const ratios = await this.camera.getSupportedRatiosAsync();
+
+         // See if the current device has your desired ratio, otherwise get the maximum supported one
+         // Usually the last element of "ratios" is the maximum supported ratio
+         const ratio = ratios.find((ratio) => ratio === DESIRED_RATIO) || ratios[ratios.length - 1];
+         
+         this.setState({ ratio });
+    }
   }
 
   _requestPermission = async() => {
